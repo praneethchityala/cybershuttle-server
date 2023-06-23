@@ -1,0 +1,15 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.cybershuttle</groupId>
+    <artifactId>app-server</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>app-server</name>
+    <packaging>pom</packaging>
+    <modules>
+        <module>cybershuttle-app-service</module>
+        <module>cybershuttle-app-stub</module>
+    </modules>
+
+</project>
