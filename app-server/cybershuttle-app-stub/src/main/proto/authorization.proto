@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package org.cybershuttle.appserver;
+
+option java_multiple_files = true;
+//option java_package = "org.cybershuttle.appserver";
+
+message Register {
+  string username = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string password = 5;
+  int32 id = 6;
+}
+
+message User {
+  string email = 1;
+  string password = 2;
+}
+
+message CreateUserRequest {
+  Register new_user = 1;
+}
+
+message CreateUserResponse {
+  int32 id = 1;
+}
+
+message GetUserRequest {
+  int32 id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message CreateTokenRequest {
+  User user = 1;
+}
+
+message CreateTokenResponse {
+  string token = 1;
+}
+
+message IsAuthenticatedRequest {
+  string token = 1;
+}
+
+message IsAuthenticatedResponse {
+  User user = 1;
+  bool ok = 2;
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+
+message HelloReply {
+  string message = 1;
+}
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {};
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {};
+  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse) {};
+  rpc IsAuthenticated(IsAuthenticatedRequest) returns (IsAuthenticatedResponse) {};
+  rpc SayHello(HelloRequest) returns (HelloReply);
+}
