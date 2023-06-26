@@ -15,6 +15,14 @@ message Register {
 }
 
 message User {
+  string username = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  int32 id = 5;
+}
+
+message Login {
   string email = 1;
   string password = 2;
 }
@@ -36,7 +44,7 @@ message GetUserResponse {
 }
 
 message CreateTokenRequest {
-  User user = 1;
+  Login login = 1;
 }
 
 message CreateTokenResponse {
@@ -52,19 +60,10 @@ message IsAuthenticatedResponse {
   bool ok = 2;
 }
 
-message HelloRequest {
-  string name = 1;
-}
-
-
-message HelloReply {
-  string message = 1;
-}
 
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {};
   rpc GetUser(GetUserRequest) returns (GetUserResponse) {};
   rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse) {};
   rpc IsAuthenticated(IsAuthenticatedRequest) returns (IsAuthenticatedResponse) {};
-  rpc SayHello(HelloRequest) returns (HelloReply);
 }
