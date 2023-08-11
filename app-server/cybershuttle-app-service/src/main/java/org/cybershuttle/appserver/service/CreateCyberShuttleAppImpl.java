@@ -29,17 +29,23 @@ public class CreateCyberShuttleAppImpl extends CyberShuttleServiceGrpc.CyberShut
         System.out.println(appId);
 
         Item item0 = Item.newBuilder().setName("Item 0").setDescription("description 0").setItemId(0).setItemStatus(ItemStatus.newBuilder()
-                .setIsItemLaunched(true).setItemStatus("ready").build()).build();
+                .setIsItemLaunched(false).setItemStatus("ready").build()).build();
         Item item1 = Item.newBuilder().setName("Item 1").setDescription("description 1").setItemId(1).setItemStatus(ItemStatus.newBuilder()
-                .setIsItemLaunched(true).setItemStatus("ready").build()).build();
+                .setIsItemLaunched(false).setItemStatus("ready").build()).build();
         Item item2 = Item.newBuilder().setName("Item 2").setDescription("description 2").setItemId(2).setItemStatus(ItemStatus.newBuilder()
-                .setIsItemLaunched(true).setItemStatus("ready").build()).build();
+                .setIsItemLaunched(false).setItemStatus("ready").build()).build();
         Item item3 = Item.newBuilder().setName("Item 3").setDescription("description 3").setItemId(3).setItemStatus(ItemStatus.newBuilder()
-                .setIsItemLaunched(true).setItemStatus("ready").build()).build();
+                .setIsItemLaunched(false).setItemStatus("ready").build()).build();
         Item item4 = Item.newBuilder().setName("Item 4").setDescription("description 4").setItemId(4).setItemStatus(ItemStatus.newBuilder()
-                .setIsItemLaunched(true).setItemStatus("ready").build()).build();
+                .setIsItemLaunched(false).setItemStatus("ready").build()).build();
 
-        ListItems userItems = ListItems.newBuilder().addItems(item0).addItems(item1).addItems(item2).addItems(item3).addItems(item4).build();
+        ListItems userItems;
+
+        if (appId == 0) {
+            userItems = ListItems.newBuilder().addItems(item0).addItems(item1).addItems(item2).addItems(item3).addItems(item4).build();
+        } else {
+            userItems = ListItems.newBuilder().addItems(item0).addItems(item1).addItems(item2).addItems(item3).build();
+        }
 
         responseObserver.onNext(userItems);
         responseObserver.onCompleted();
