@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package org.cybershuttle.orchestration.agent;
+
+option java_multiple_files = true;
+//option java_package = "org.cybershuttle.orchestration.agent";
+
+message Register {
+  string username = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string password = 5;
+  int32 id = 6;
+}
+
+message User {
+  string username = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  int32 id = 5;
+}
+
+message Login {
+  string email = 1;
+  string password = 2;
+}
+
+message CreateUserRequest {
+  Register new_user = 1;
+}
+
+message CreateUserResponse {
+  int32 id = 1;
+}
+
+message GetUserRequest {
+  int32 id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message CreateTokenRequest {
+  Login login = 1;
+}
+
+message CreateTokenResponse {
+  string token = 1;
+}
+
+message IsAuthenticatedRequest {
+  string token = 1;
+}
+
+message IsAuthenticatedResponse {
+  User user = 1;
+  bool ok = 2;
+}
+
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {};
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {};
+  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse) {};
+  rpc IsAuthenticated(IsAuthenticatedRequest) returns (IsAuthenticatedResponse) {};
+}

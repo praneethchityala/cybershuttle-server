@@ -1,0 +1,231 @@
+{
+  "Stop": false,
+  "Region": "global",
+  "Namespace": "default",
+  "ID": "hello-world-json",
+  "ParentID": "",
+  "Name": "hello-world-json",
+  "Type": "service",
+  "Priority": 50,
+  "AllAtOnce": false,
+  "Datacenters": [
+    "*"
+  ],
+  "Constraints": null,
+  "Affinities": null,
+  "Spreads": null,
+  "TaskGroups": [
+    {
+      "Name": "servers",
+      "Count": 1,
+      "Update": {
+        "Stagger": 30000000000,
+        "MaxParallel": 1,
+        "HealthCheck": "checks",
+        "MinHealthyTime": 10000000000,
+        "HealthyDeadline": 300000000000,
+        "ProgressDeadline": 600000000000,
+        "AutoRevert": false,
+        "AutoPromote": false,
+        "Canary": 0
+      },
+      "Migrate": {
+        "MaxParallel": 1,
+        "HealthCheck": "checks",
+        "MinHealthyTime": 10000000000,
+        "HealthyDeadline": 300000000000
+      },
+      "Constraints": [
+        {
+          "LTarget": "${attr.nomad.service_discovery}",
+          "RTarget": "true",
+          "Operand": "="
+        }
+      ],
+      "Scaling": null,
+      "RestartPolicy": {
+        "Attempts": 2,
+        "Interval": 1800000000000,
+        "Delay": 15000000000,
+        "Mode": "fail"
+      },
+      "Tasks": [
+        {
+          "Name": "web",
+          "Driver": "docker",
+          "User": "",
+          "Config": {
+            "ports": [
+              "www"
+            ],
+            "image": "busybox:1",
+            "command": "httpd",
+            "args": [
+              "-v",
+              "-f",
+              "-p",
+              "${NOMAD_PORT_www}",
+              "-h",
+              "/local"
+            ]
+          },
+          "Env": null,
+          "Services": null,
+          "Vault": null,
+          "Templates": [
+            {
+              "SourcePath": "",
+              "DestPath": "local/index.html",
+              "EmbeddedTmpl": "                        <h1>Hello, Nomad!</h1>\n                        <ul>\n                          <li>Task: {{env \"NOMAD_TASK_NAME\"}}</li>\n                          <li>Group: {{env \"NOMAD_GROUP_NAME\"}}</li>\n                          <li>Job: {{env \"NOMAD_JOB_NAME\"}}</li>\n                          <li>Metadata value for foo: {{env \"NOMAD_META_foo\"}}</li>\n                          <li>Currently running on port: {{env \"NOMAD_PORT_www\"}}</li>\n                        </ul>\n",
+              "ChangeMode": "restart",
+              "ChangeSignal": "",
+              "ChangeScript": null,
+              "Splay": 5000000000,
+              "Perms": "0644",
+              "Uid": null,
+              "Gid": null,
+              "LeftDelim": "{{",
+              "RightDelim": "}}",
+              "Envvars": false,
+              "VaultGrace": 0,
+              "Wait": null,
+              "ErrMissingKey": false
+            }
+          ],
+          "Constraints": null,
+          "Affinities": null,
+          "Resources": {
+            "CPU": 50,
+            "Cores": 0,
+            "MemoryMB": 64,
+            "MemoryMaxMB": 0,
+            "DiskMB": 0,
+            "IOPS": 0,
+            "Networks": null,
+            "Devices": null
+          },
+          "RestartPolicy": {
+            "Attempts": 2,
+            "Interval": 1800000000000,
+            "Delay": 15000000000,
+            "Mode": "fail"
+          },
+          "DispatchPayload": null,
+          "Lifecycle": null,
+          "Meta": null,
+          "KillTimeout": 5000000000,
+          "LogConfig": {
+            "MaxFiles": 10,
+            "MaxFileSizeMB": 10,
+            "Disabled": false
+          },
+          "Artifacts": null,
+          "Leader": false,
+          "ShutdownDelay": 0,
+          "VolumeMounts": null,
+          "ScalingPolicies": null,
+          "KillSignal": "",
+          "Kind": "",
+          "CSIPluginConfig": null,
+          "Identity": null
+        }
+      ],
+      "EphemeralDisk": {
+        "Sticky": false,
+        "SizeMB": 300,
+        "Migrate": false
+      },
+      "Meta": null,
+      "ReschedulePolicy": {
+        "Attempts": 0,
+        "Interval": 0,
+        "Delay": 30000000000,
+        "DelayFunction": "exponential",
+        "MaxDelay": 3600000000000,
+        "Unlimited": true
+      },
+      "Affinities": null,
+      "Spreads": null,
+      "Networks": [
+        {
+          "Mode": "",
+          "Device": "",
+          "CIDR": "",
+          "IP": "",
+          "Hostname": "",
+          "MBits": 0,
+          "DNS": null,
+          "ReservedPorts": null,
+          "DynamicPorts": [
+            {
+              "Label": "www",
+              "Value": 0,
+              "To": 8001,
+              "HostNetwork": "default"
+            }
+          ]
+        }
+      ],
+      "Consul": {
+        "Namespace": ""
+      },
+      "Services": [
+        {
+          "Name": "hello-world-servers",
+          "TaskName": "",
+          "PortLabel": "www",
+          "AddressMode": "auto",
+          "Address": "",
+          "EnableTagOverride": false,
+          "Tags": null,
+          "CanaryTags": null,
+          "Checks": null,
+          "Connect": null,
+          "Meta": null,
+          "CanaryMeta": null,
+          "TaggedAddresses": null,
+          "Namespace": "default",
+          "OnUpdate": "require_healthy",
+          "Provider": "nomad"
+        }
+      ],
+      "Volumes": null,
+      "ShutdownDelay": null,
+      "StopAfterClientDisconnect": null,
+      "MaxClientDisconnect": null
+    }
+  ],
+  "Update": {
+    "Stagger": 30000000000,
+    "MaxParallel": 1,
+    "HealthCheck": "",
+    "MinHealthyTime": 0,
+    "HealthyDeadline": 0,
+    "ProgressDeadline": 0,
+    "AutoRevert": false,
+    "AutoPromote": false,
+    "Canary": 0
+  },
+  "Multiregion": null,
+  "Periodic": null,
+  "ParameterizedJob": null,
+  "Dispatched": false,
+  "DispatchIdempotencyToken": "",
+  "Payload": null,
+  "Meta": {
+    "foo": "bar"
+  },
+  "ConsulToken": "",
+  "ConsulNamespace": "",
+  "VaultToken": "",
+  "VaultNamespace": "",
+  "NomadTokenID": "",
+  "Status": "running",
+  "StatusDescription": "",
+  "Stable": true,
+  "Version": 0,
+  "SubmitTime": 1689636392581663000,
+  "CreateIndex": 342,
+  "ModifyIndex": 352,
+  "JobModifyIndex": 342
+}

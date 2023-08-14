@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package org.cybershuttle.orchestration.agent;
+
+option java_multiple_files = true;
+
+message App {
+  string name = 1;
+  string icon = 2;
+  int32 appId = 3;
+  int32 noOfItems = 4;
+}
+
+message AppRequest {
+  int32 appId = 1;
+}
+
+message MyApps {
+  repeated App apps = 1;
+  int32 noOfApps = 2;
+}
+
+message AppsRequest {
+  int32 userId = 1;
+}
+
+message Item {
+  string name = 1;
+  string description = 2;
+  int32 itemId = 3;
+  ItemStatus itemStatus =4;
+}
+
+message ItemRequest {
+  int32 itemId = 1;
+}
+
+message ListItems {
+  repeated Item items = 1;
+}
+
+message ItemStatus {
+  bool isItemLaunched = 1;
+  string itemStatus = 2;
+}
+
+service CyberShuttleService {
+  rpc GetApps(AppsRequest) returns (MyApps) {};
+  rpc GetItems(AppRequest) returns (ListItems) {};
+  rpc LaunchItem(ItemRequest) returns (ItemStatus) {};
+  rpc StopItem(ItemRequest) returns (ItemStatus) {};
+}
