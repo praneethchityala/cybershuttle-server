@@ -3,9 +3,14 @@ package org.cybershuttle.appserver.service;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.cybershuttle.appserver.*;
+import org.cybershuttle.appserver.ingress.ConsulClient;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @GrpcService
 public class CreateCyberShuttleAppImpl extends CyberShuttleServiceGrpc.CyberShuttleServiceImplBase {
+
+    @Autowired
+    private ConsulClient consulClient;
 
     @Override
     public void getApps(AppsRequest request, StreamObserver<MyApps> responseObserver) {
