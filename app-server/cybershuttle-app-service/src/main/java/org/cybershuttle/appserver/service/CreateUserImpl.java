@@ -3,15 +3,21 @@ package org.cybershuttle.appserver.service;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.cybershuttle.appserver.*;
+import org.cybershuttle.appserver.ingress.ConsulClient;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @GrpcService
 public class CreateUserImpl extends UserServiceGrpc.UserServiceImplBase {
+
+    @Autowired
+    private ConsulClient consulClient;
 
     @Override
     public void createUser(CreateUserRequest request, StreamObserver<CreateUserResponse> responseObserver) {
         String newUser = request.getNewUser().toString();
         System.out.println("new user");
         System.out.println(newUser);
+        System.out.println(consulClient.testConsul);
 
         CreateUserResponse createUserResponse = CreateUserResponse.newBuilder().setId(101).build();
 
