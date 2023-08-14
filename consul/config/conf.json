@@ -1,0 +1,13 @@
+{
+	"datacenter": "my-consul",
+	"data_dir": "./data",
+	"log_level": "INFO",
+	"node_name": "DevOps",
+	"server": true,
+	"addresses": {
+		"http": "0.0.0.0"
+	},
+	"ports": {
+		"http": 8500
+	}
+}

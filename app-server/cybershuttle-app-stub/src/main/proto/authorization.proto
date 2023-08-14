@@ -55,9 +55,15 @@ message IsAuthenticatedRequest {
   string token = 1;
 }
 
+message Consul {
+  string consulToken = 1;
+  string consulPath = 2;
+}
+
 message IsAuthenticatedResponse {
   User user = 1;
   bool ok = 2;
+  Consul consulParams = 3;
 }
 
 
