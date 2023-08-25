@@ -4,6 +4,7 @@ import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.cybershuttle.appserver.*;
 import org.cybershuttle.appserver.ingress.ConsulClient;
+import org.cybershuttle.appserver.utils.StaticData;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @GrpcService
@@ -61,6 +62,15 @@ public class CreateCyberShuttleAppImpl extends CyberShuttleServiceGrpc.CyberShut
         Integer itemId = request.getItemId();
         System.out.println(itemId);
 
+        ConsulParams consulParams = request.getConsulParams();
+
+        try {
+            String jobId = consulClient.submitJob(consulParams.getConsulPath(),
+                    itemId.toString(), new StaticData().serverNomadJson);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         ItemStatus itemStatus = ItemStatus.newBuilder().setIsItemLaunched(true).setItemStatus("launched").build();
 
         responseObserver.onNext(itemStatus);
@@ -71,6 +81,14 @@ public class CreateCyberShuttleAppImpl extends CyberShuttleServiceGrpc.CyberShut
     public void stopItem(ItemRequest request, StreamObserver<ItemStatus> responseObserver) {
         Integer itemId = request.getItemId();
         System.out.println(itemId);
+
+        ConsulParams consulParams = request.getConsulParams();
+
+        try {
+            String jobId = consulClient.removeJob(consulParams.getConsulPath(),itemId.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         ItemStatus itemStatus = ItemStatus.newBuilder().setIsItemLaunched(false).setItemStatus("ready").build();
 

@@ -4,23 +4,23 @@ import java.util.List;
 
 public class AgentInfo {
 
-    private String id;
+    private Integer id;
     private String user;
     private String sessionId;
     private String sessionConsulToken;
 
-    public AgentInfo(String id, String user, String sessionId, String sessionConsulToken){
+    public AgentInfo(Integer id, String user, String sessionId, String sessionConsulToken){
         this.id = id;
         this.user = user;
         this.sessionId = sessionId;
         this.sessionConsulToken = sessionConsulToken;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public AgentInfo setId(String id) {
+    public AgentInfo setId(Integer id) {
         this.id = id;
         return this;
     }

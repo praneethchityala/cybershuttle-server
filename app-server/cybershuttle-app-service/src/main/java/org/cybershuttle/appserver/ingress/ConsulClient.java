@@ -6,7 +6,6 @@ import com.google.common.net.HostAndPort;
 import com.orbitz.consul.*;
 import com.orbitz.consul.model.acl.*;
 import com.orbitz.consul.model.kv.Value;
-import com.orbitz.consul.option.DeleteOptions;
 import com.orbitz.consul.option.PutOptions;
 import org.cybershuttle.appserver.models.AgentInfo;
 import org.slf4j.Logger;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.google.common.net.HostAndPort.fromParts;
 @Component
 public class ConsulClient {
 
@@ -53,31 +51,17 @@ public class ConsulClient {
     public static final String AGENTS_PENDING_JOB_COUNT_PATH = "cs/agents/pendingjobs/";
 
     public static final String CONTROLLER_STATE_MESSAGE_PATH = "cs/controller/messages/states/";
-    public static final String CONTROLLER_JOB_MESSAGE_PATH = "cs/controller/messages/jobs/";
+    public static final String JOBS_SCHEDULED_PATH = "cs/job/scheduled/";
+    public static final String JOBS_REMOVE_PATH = "cs/job/remove/";
 
-//    public ConsulClient(String consulHostPorts, Integer token) {
-//        List<HostAndPort> hostAndPorts = consulHostPorts.entrySet().stream()
-//                .map(entry -> fromParts(entry.getKey(), entry.getValue()))
-//                .collect(Collectors.toList());
-//        this.client = Consul.builder().withMultipleHostAndPort(hostAndPorts, 100000)
-//                .withTokenAuth(token)
-//                .withReadTimeoutMillis(11000).withWriteTimeoutMillis(1000).build();
-//        this.kvClient = client.keyValueClient();
-//        this.aclClient = client.aclClient();
-//        this.sessionClient = client.sessionClient();
-//    }
 
     public ConsulClient(String host, int port, String token) {
         this.client = Consul.builder().withHostAndPort(HostAndPort.fromParts(host, port)).withTokenAuth(token).build();
-        this.kvClient = client.keyValueClient();
-        this.aclClient = client.aclClient();
-        this.sessionClient = client.sessionClient();
+        this.kvClient = this.client.keyValueClient();
+        this.aclClient = this.client.aclClient();
+        this.sessionClient = this.client.sessionClient();
     }
 
-
-//    public ConsulClient ConsulClient() {
-//        return new ConsulClient(consulHost, consulPort, consulToken);
-//    }
 
     public ConsulClient() {
     }
@@ -121,10 +105,19 @@ public class ConsulClient {
         }
     }
 
-    public String submitJob(String jobRequest) throws Exception {
+    public String submitJob(String sessionId, String jobId, String jobRequest) throws Exception {
         try {
-            String jobId = UUID.randomUUID().toString();
-            kvClient.putValue(CONTROLLER_JOB_MESSAGE_PATH + jobId, Arrays.toString(jobRequest.toCharArray()),
+            kvClient.putValue(sessionId +"/"+ JOBS_SCHEDULED_PATH + jobId, jobRequest,
+                    0L, PutOptions.BLANK);
+            return jobId;
+        } catch (Exception e) {
+            throw new Exception("Error in serializing job request", e);
+        }
+    }
+
+    public String removeJob(String sessionId, String jobId) throws Exception {
+        try {
+            kvClient.putValue(sessionId +"/"+ JOBS_REMOVE_PATH, jobId,
                     0L, PutOptions.BLANK);
             return jobId;
         } catch (Exception e) {
@@ -143,6 +136,17 @@ public class ConsulClient {
 
     }
 
+    public PolicyResponse createWritePrefixPolicy(String name, String description, String prefix){
+
+        String rule = "key_prefix \""+prefix+"\" {\n" +
+
+                "  policy = \"write\"\n" +
+                "}";
+
+        return createPolicy(name,description,rule);
+
+    }
+
     public TokenResponse createToken(PolicyResponse policyResponse){
 
         ImmutablePolicyLink newPolicyLink = ImmutablePolicyLink.builder()
@@ -155,25 +159,6 @@ public class ConsulClient {
 
         return newTokenResponse;
     }
-
-//    /**
-//     * Submits a {@link JobApiRequest} to a target agent
-//     *
-//     * @param agentId Agent Id
-//     * @param jobRequest Target job request
-//     * @throws Exception If {@link JobApiRequest} can not be delivered to consul store
-//     */
-//    public void commandJobToAgent(String agentId, String jobId, AgentJobRequest jobRequest)
-//            throws Exception {
-//        try {
-//            byte[] jobReqBytes = jobRequest.toByteArray();
-//            kvClient.putValue(AGENTS_JOB_REQUEST_MESSAGE_PATH + agentId + "/" + jobId + "/" + jobRequest.getRequestId(), jobReqBytes,
-//                    0L, PutOptions.BLANK);
-//
-//        } catch (Exception e) {
-//            throw new Exception("Error in submitting job command to Agent through consul", e);
-//        }
-//    }
 
     public List<String> listPendingAgentJobs(String agentId) throws Exception  {
         try {
@@ -190,24 +175,6 @@ public class ConsulClient {
             throw new Exception("Failed to list pending agent jobs for agent " + agentId, e);
         }
     }
-
-//    public void sendSyncRPCToAgent(String agentId, SyncRPCRequest rpcRequest) throws Exception {
-//        try {
-//            String asString = mapper.writeValueAsString(rpcRequest);
-//            kvClient.putValue(AGENTS_RPC_REQUEST_MESSAGE_PATH + agentId + "/" + rpcRequest.getMessageId(), asString);
-//        } catch (JsonProcessingException e) {
-//            throw new Exception("Error in serializing rpc request", e);
-//        }
-//    }
-//
-//    public void sendSyncRPCResponseFromAgent(String returnAddress, SyncRPCResponse rpcResponse) throws Exception {
-//        try {
-//            String asString = mapper.writeValueAsString(rpcResponse);
-//            kvClient.putValue(returnAddress, asString);
-//        } catch (JsonProcessingException e) {
-//            throw new Exception("Error in serializing rpc response", e);
-//        }
-//    }
 
     /**
      * List all currently registered agents.
@@ -323,135 +290,7 @@ public class ConsulClient {
             throw new Exception("Failed to fetch endpoint hook count for agent " + agentId, e);
         }
     }
-//    /**
-//     * Agents should call this method to submit {@link JobState}. These status are received by the controller and reorder
-//     * status messages and put in the final status array.
-//     *
-//     * @param jobId
-//     * @param agentId
-//     * @param jobState
-//     * @throws Exception
-//     */
-//    public void submitFileJobStateToProcess(String jobId, String agentRequestId,
-//                                                 EndpointPaths endpointPath,
-//                                                 String agentId, JobState jobState) throws Exception {
-//        try {
-//
-//            String pathMD5 = getEndpointPathHash(endpointPath);
-//            kvClient.putValue(CONTROLLER_STATE_MESSAGE_PATH + jobId + "/" + agentId + "/" + agentRequestId + "/" + pathMD5 + "/" + jobState.getUpdateTimeMils(),
-//                    mapper.writeValueAsString(jobState));
-//        } catch (Exception e) {
-//            logger.error("Error in submitting job status to process for job {} and agent {}", jobId, agentId, e);
-//            throw new Exception("Error in submitting job status", e);
-//        }
-//    }
-//
-//    public String getEndpointPathHash(EndpointPaths endpointPath) {
-//        return DigestUtils.md5DigestAsHex((endpointPath.getSourcePath() + ":" + endpointPath.getDestinationPath()).getBytes());
-//    }
-//
-//    public String getEndpointPathHash(org.apache.airavata.mft.api.service.EndpointPaths endpointPath) {
-//        return DigestUtils.md5DigestAsHex((endpointPath.getSourcePath() + ":" + endpointPath.getDestinationPath()).getBytes());
-//    }
-//
-//    /**
-//     * Add the {@link JobState} to the aggregated state array. This method should only be called by the
-//     * Controller and API server once the job is accepted. Agents should NEVER call this method as it would corrupt
-//     * state array when multiple clients are writing at the same time
-//     *
-//     * @param jobId
-//     * @param jobState
-//     * @throws Exception
-//     */
-//    public void saveJobState(String jobId, String agentRequestId, JobState jobState) throws Exception {
-//        try {
-//            String asStr = mapper.writeValueAsString(jobState);
-//            if (agentRequestId == null) {
-//                kvClient.putValue(JOB_STATE_PATH + jobId + "/" + UUID.randomUUID().toString(), asStr);
-//            } else {
-//                kvClient.putValue(JOB_STATE_PATH + jobId + "/" + agentRequestId + "/" + UUID.randomUUID().toString(), asStr);
-//            }
-//            logger.info("Saved job status " + asStr);
-//
-//        } catch (Exception e) {
-//            throw new Exception("Error in serializing job status", e);
-//        }
-//    }
-//
-//    /**
-//     * Get the latest {@link JobState} for given job id
-//     *
-//     * @param jobId Job Id
-//     * @return Optional {@link JobState } is there is any
-//     * @throws Exception
-//     */
-//    public Optional<JobState> getLastJobState(String jobId) throws Exception {
-//
-//        try {
-//            List<JobState> states = getJobStates(jobId);
-//
-//            Optional<JobState> lastStatusOp = states.stream().min((o1, o2) -> {
-//                if (o1.getUpdateTimeMils() == o2.getUpdateTimeMils()) {
-//                    return 0;
-//                } else {
-//                    return o1.getUpdateTimeMils() - o2.getUpdateTimeMils() < 0 ? 1 : -1;
-//                }
-//            });
-//
-//            return lastStatusOp;
-//
-//        } catch (ConsulException e) {
-//            throw new Exception("Error in fetching job status " + jobId, e);
-//        } catch (Exception e) {
-//            throw new Exception("Error in fetching job status " + jobId, e);
-//        }
-//    }
-//
-//    /**
-//     * Provide all {@link JobState} for given job id
-//     *
-//     * @param jobId Job Id
-//     * @return The list of all {@link JobState}
-//     * @throws IOException
-//     */
-//    public List<JobState> getJobStates(String jobId) throws IOException {
-//        return getJobStates(jobId, null);
-//    }
-//
-//    public List<JobState> getJobStates(String jobId, String agentRequestId) throws IOException {
-//        List<String> keys = kvClient.getKeys(JOB_STATE_PATH + jobId + (agentRequestId == null? "" : "/" + agentRequestId));
-//
-//        List<JobState> allStates = new ArrayList<>();
-//
-//        for (String key: keys) {
-//            Optional<Value> valueOp = kvClient.getValue(key);
-//            String stateAsStr = valueOp.get().getValueAsString().get();
-//            JobState jobState = mapper.readValue(stateAsStr, JobState.class);
-//            allStates.add(jobState);
-//        }
-//        List<JobState> sortedStates = allStates.stream().sorted((o1, o2) ->
-//                (o1.getUpdateTimeMils() - o2.getUpdateTimeMils()) < 0 ? -1 :
-//                        (o1.getUpdateTimeMils() - o2.getUpdateTimeMils()) == 0 ? 0 : 1).collect(Collectors.toList());
-//        return sortedStates;
-//    }
-//
-//    public void markJobAsProcessed(String jobId, JobApiRequest jobRequest) {
-//        kvClient.putValue(JOB_PROCESSED_PATH + jobId,
-//                jobRequest.toByteArray(), 0L, PutOptions.BLANK);
-//    }
-//    public Optional<JobApiRequest> getProcessedJob(String jobId) throws InvalidProtocolBufferException {
-//        Optional<Value> value = kvClient.getValue(JOB_PROCESSED_PATH + jobId);
-//        if (value.isPresent()) {
-//            return Optional.of(JobApiRequest.newBuilder().mergeFrom(value.get().getValueAsBytes().get()).build());
-//        } else {
-//            return Optional.empty();
-//        }
-//    }
 
-    public void removeJob(String jobId) {
-        kvClient.deleteKey(JOB_STATE_PATH + jobId, DeleteOptions.RECURSE);
-        kvClient.deleteKey(JOB_PROCESSED_PATH + jobId, DeleteOptions.RECURSE);
-    }
 
     public List<AgentInfo> getLiveAgentInfos() throws Exception {
         List<String> liveAgentIds = getLiveAgentIds();

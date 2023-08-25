@@ -49,21 +49,25 @@ message CreateTokenRequest {
 
 message CreateTokenResponse {
   string token = 1;
+  User user = 2;
 }
 
 message IsAuthenticatedRequest {
   string token = 1;
+  User user = 2;
 }
 
-message Consul {
+message ConsulAuthParams {
   string consulToken = 1;
   string consulPath = 2;
+  string consulHost = 3;
+  int32 consulPort = 4;
 }
 
 message IsAuthenticatedResponse {
   User user = 1;
   bool ok = 2;
-  Consul consulParams = 3;
+  ConsulAuthParams consulAuthParams = 3;
 }
 
 
