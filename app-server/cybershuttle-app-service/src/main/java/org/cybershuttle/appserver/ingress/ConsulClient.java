@@ -50,7 +50,7 @@ public class ConsulClient {
     public static final String AGENTS_SCHEDULED_PATH = "cs/agents/scheduled/";
     public static final String AGENTS_PENDING_JOB_COUNT_PATH = "cs/agents/pendingjobs/";
 
-    public static final String CONTROLLER_STATE_MESSAGE_PATH = "cs/controller/messages/states/";
+    public static final String JOBS_PROCESSING_PATH = "cs/job/processing/";
     public static final String JOBS_SCHEDULED_PATH = "cs/job/scheduled/";
     public static final String JOBS_REMOVE_PATH = "cs/job/remove/";
 
@@ -105,9 +105,9 @@ public class ConsulClient {
         }
     }
 
-    public String submitJob(String sessionId, String jobId, String jobRequest) throws Exception {
+    public String submitJob(String sessionPath, String jobId, String jobRequest) throws Exception {
         try {
-            kvClient.putValue(sessionId +"/"+ JOBS_SCHEDULED_PATH + jobId, jobRequest,
+            kvClient.putValue(sessionPath +"/"+ JOBS_SCHEDULED_PATH + jobId, jobRequest,
                     0L, PutOptions.BLANK);
             return jobId;
         } catch (Exception e) {
@@ -115,9 +115,9 @@ public class ConsulClient {
         }
     }
 
-    public String removeJob(String sessionId, String jobId) throws Exception {
+    public String removeJob(String sessionPath, String jobId) throws Exception {
         try {
-            kvClient.putValue(sessionId +"/"+ JOBS_REMOVE_PATH, jobId,
+            kvClient.putValue(sessionPath +"/"+ JOBS_REMOVE_PATH + jobId, jobId,
                     0L, PutOptions.BLANK);
             return jobId;
         } catch (Exception e) {

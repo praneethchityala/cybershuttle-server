@@ -40,7 +40,7 @@ message Item {
 
 message ItemRequest {
   int32 itemId = 1;
-  ConsulParams consulParams = 2;
+  string sessionPath = 2;
 }
 
 message ListItems {
