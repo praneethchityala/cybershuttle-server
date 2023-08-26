@@ -20,37 +20,37 @@ public class OrchestrationAgentApplication {
 
 		SpringApplication.run(OrchestrationAgentApplication.class, args);
 
-		JSONParser jsonParser = new JSONParser();
-
-		String file = "./myjob.json";
-
-		String job = ((JSONObject) jsonParser.parse(new FileReader(file))).toJSONString();
-
-		Job newJob = Job.fromJson(job);
-		NomadApiClient myClient = createConnection("http://localhost:4646");
-		Boolean startedJob = startJob(newJob,myClient);
-
-		System.out.println(startedJob);
-
-		Thread.sleep(10000);
-
-		Job runningJob = getJob(newJob.getId(), myClient);
-
-		System.out.println(runningJob.getId());
-
-		System.out.println(runningJob.getStatus());
-
-		Thread.sleep(10000);
-
-		Boolean killedJob = killJob(newJob,myClient);
-
-		System.out.println(killedJob);
-
-		runningJob = getJob(newJob.getId(), myClient);
-
-		System.out.println(runningJob.getId());
-
-		System.out.println(runningJob.getStatus());
+//		JSONParser jsonParser = new JSONParser();
+//
+//		String file = "./myjob.json";
+//
+//		String job = ((JSONObject) jsonParser.parse(new FileReader(file))).toJSONString();
+//
+//		Job newJob = Job.fromJson(job);
+//		NomadApiClient myClient = createConnection("http://localhost:4646");
+//		Boolean startedJob = startJob(newJob,myClient);
+//
+//		System.out.println(startedJob);
+//
+//		Thread.sleep(10000);
+//
+//		Job runningJob = getJob(newJob.getId(), myClient);
+//
+//		System.out.println(runningJob.getId());
+//
+//		System.out.println(runningJob.getStatus());
+//
+//		Thread.sleep(10000);
+//
+//		Boolean killedJob = killJob(newJob,myClient);
+//
+//		System.out.println(killedJob);
+//
+//		runningJob = getJob(newJob.getId(), myClient);
+//
+//		System.out.println(runningJob.getId());
+//
+//		System.out.println(runningJob.getStatus());
 	}
 
 }

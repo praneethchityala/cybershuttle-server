@@ -1,19 +1,40 @@
 package org.cybershuttle.orchestration.agent.service;
 
+import com.google.common.net.HostAndPort;
 import com.hashicorp.nomad.apimodel.Job;
 import com.hashicorp.nomad.apimodel.JobListStub;
 import com.hashicorp.nomad.javasdk.*;
+import com.orbitz.consul.Consul;
+import org.cybershuttle.orchestration.agent.JobOrchestrator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 @Component
 public class NomadController {
 
-    private static final Logger LOG = Logger.getLogger(NomadController.class.getName());
+//    private static final Logger LOG = Logger.getLogger(NomadController.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(NomadController.class);
+
+    private NomadApiClient nomadApiClient;
+
+    public NomadController(String host) {
+        NomadApiConfiguration config =
+                new NomadApiConfiguration.Builder()
+                        .setAddress(host)
+                        .build();
+
+         this.nomadApiClient = new NomadApiClient(config);
+    }
+
+
+    public NomadController() {
+    }
 
     public static NomadApiClient createConnection(String host) {
         NomadApiConfiguration config =
@@ -32,94 +53,87 @@ public class NomadController {
                 nomadApiClient.close();
             }
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, String.format("Error closing client: %s", e.getMessage()), e);
+            logger.error("Error closing client: %s", e.getMessage());
         }
     }
 
-    public static boolean startJob(Job job, NomadApiClient nomadApiClient) {
+    public boolean startJob(Job job) {
 
         try {
             EvaluationResponse response = nomadApiClient.getJobsApi().register(job);
-            LOG.log(Level.INFO, "Submitted job to nomad: " + response);
+            logger.info("Submitted job to nomad: " + response);
             return true;
         } catch (IOException | NomadException e) {
-            LOG.log(Level.SEVERE, "Failed to submit the job: ", e);
+            logger.error("Failed to submit the job: ", e);
         }
         return false;
     }
 
-    public static boolean startJob(String jobID, NomadApiClient nomadApiClient) {
+    public boolean startJob(String jobID) {
 
-        Job job = getJob(jobID, nomadApiClient);
+        Job job = getJob(jobID);
 
         if (job != null) {
-            return startJob(job, nomadApiClient);
+            return startJob(job);
         } else {
-            LOG.log(Level.INFO, "Job not found with job ID");
+            logger.info("Job not found with job ID");
         }
 
         return false;
     }
 
-    public static boolean killJob(String jobID, NomadApiClient nomadApiClient) {
+    public boolean killJob(String jobID) {
 
-        LOG.log(Level.INFO, "Killing Job " + jobID);
+        logger.info("Killing Job " + jobID);
         try {
-            Job nomadJob = getJob(jobID, nomadApiClient);
+            Job nomadJob = getJob(jobID);
             if (nomadJob == null) {
-                LOG.log(Level.INFO, "Cannot find the running job: " + jobID);
+                logger.info("Cannot find the running job: " + jobID);
                 return false;
             }
             nomadApiClient.getJobsApi().deregister(nomadJob.getId());
         } catch (RuntimeException | IOException | NomadException e) {
-            LOG.log(Level.SEVERE, "Failed to terminate job " + jobID
+            logger.error("Failed to terminate job " + jobID
                     + " with error: " + e.getMessage(), e);
             return false;
         }
         return true;
     }
 
-    public static boolean killJob(Job job, NomadApiClient nomadApiClient) {
+    public boolean killJob(Job job) {
 
         String jobID = job.getId();
 
-        return killJob(jobID, nomadApiClient);
+        return killJob(jobID);
     }
 
-    public static List<JobListStub> getJobList(NomadApiClient apiClient) {
+    public List<JobListStub> getJobList() {
         ServerQueryResponse<List<JobListStub>> response;
         try {
-            response = apiClient.getJobsApi().list();
+            response = nomadApiClient.getJobsApi().list();
         } catch (IOException | NomadException e) {
-            LOG.log(Level.SEVERE, "Error when attempting to fetch job list", e);
+            logger.error("Error when attempting to fetch job list", e);
             throw new RuntimeException(e);
         }
         return response.getValue();
     }
 
-    public static Job getJob(String jobID, NomadApiClient apiClient) {
-        List<JobListStub> jobs = getJobList(apiClient);
+    public Job getJob(String jobID) {
+        List<JobListStub> jobs = getJobList();
         for (JobListStub job : jobs) {
             Job jobActual;
             try {
-                jobActual = apiClient.getJobsApi().info(job.getId()).getValue();
+                jobActual = nomadApiClient.getJobsApi().info(job.getId()).getValue();
             } catch (IOException | NomadException e) {
                 String msg = "Failed to retrieve job info for job " + job.getId()
                         + " part of job " + jobID;
-                LOG.log(Level.SEVERE, msg, e);
+                logger.error(msg, e);
                 throw new RuntimeException(msg, e);
             }
-            if (jobID.equals(jobActual.getName())) {
+            if (jobID.equals(jobActual.getId())) {
                 return jobActual;
             }
         }
         return null;
     }
-
-//    private Map<String, String> getMetaData(Job job) {
-//    }
-//
-//    private TaskGroup getTaskGroup(Job job) {
-//
-//    }
 }
