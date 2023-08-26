@@ -62,10 +62,12 @@ public class CreateCyberShuttleAppImpl extends CyberShuttleServiceGrpc.CyberShut
         Integer itemId = request.getItemId();
         System.out.println(itemId);
 
-        ConsulParams consulParams = request.getConsulParams();
+        String sessionPath = request.getSessionPath();
+
+        System.out.println(sessionPath);
 
         try {
-            String jobId = consulClient.submitJob(consulParams.getConsulPath(),
+            String jobId = consulClient.submitJob(sessionPath,
                     itemId.toString(), new StaticData().serverNomadJson);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -82,10 +84,10 @@ public class CreateCyberShuttleAppImpl extends CyberShuttleServiceGrpc.CyberShut
         Integer itemId = request.getItemId();
         System.out.println(itemId);
 
-        ConsulParams consulParams = request.getConsulParams();
+        String sessionPath = request.getSessionPath();
 
         try {
-            String jobId = consulClient.removeJob(consulParams.getConsulPath(),itemId.toString());
+            String jobId = consulClient.removeJob(sessionPath,itemId.toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
